@@ -1,0 +1,13 @@
+[
+  {
+    "title": "Project Plan - [Project Name]",
+    "content": "<div> \n      <h3>Project: [Project Name]</h3> \n      <p><strong>Start Date:</strong> [Date]</p> \n      <p><strong>End Date:</strong> [Date]</p> \n      <br> \n      <h4>Objectives:</h4> \n      <ul> \n        <li></li> \n        <li></li> \n      </ul> \n      <br> \n      <h4>Milestones:</h4> \n      <ol> \n        <li></li> \n        <li></li> \n        <li></li> \n      </ol> \n      <br> \n      <h4>Resources Needed:</h4> \n      <ul> \n        <li></li> \n        <li></li> \n      </ul> \n      <br> \n      <h4>Risks:</h4> \n      <ul> \n        <li></li> \n      </ul> \n    </div>",
+    "tag": "",
+    "drawing": null,
+    "attachments": [],
+    "pinned": false,
+    "created": "2025-11-22T05:51:28.969Z",
+    "updated": "2025-11-22T05:51:28.948Z",
+    "id": 1763790688969
+  }
+]

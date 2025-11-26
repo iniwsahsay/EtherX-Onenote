@@ -1,0 +1,25 @@
+[
+  {
+    "title": "Brainstorming Session - [Topic]",
+    "content": "<div> \n      <h3>Topic: [Topic]</h3> \n      <p><strong>Date:</strong> [Date]</p> \n      <p><strong>Participants:</strong> </p> \n      <br> \n      <h4>Problem Statement:</h4> \n      <p></p> \n      <br> \n      <h4>Ideas:</h4> \n      <ul> \n        <li>      </li> \n        <li>      </li> \n        <li>      </li> \n        <li>      </li> \n        <li>      </li> \n      </ul> \n      <br> \n<h4>Best Ideas:</h4> \n<ul> \n<li>  \n</li><li>  \n</li><li>  \n</li></ul> \n<br> \n \n \n \n<h4>Next Steps:</h4> \n<ol> \n<li></li> \n<li></li> \n<li></li> \n</ol> \n</div>",
+    "tag": "",
+    "drawing": null,
+    "attachments": [],
+    "pinned": false,
+    "created": "2025-11-22T04:59:00.048Z",
+    "updated": "2025-11-22T04:59:00.043Z",
+    "id": 1763787540048,
+    "hidden": true
+  },
+  {
+    "title": "Meeting Notes - 11/22/2025",
+    "content": "<div> \n<h3>Meeting: [Meeting Name]</h3> \n<p><strong>Date:</strong> [Date]</p> \n<p><strong>Attendees:</strong> </p> \n<br> \n<h4>Agenda:</h4> \n<ul> \n<li></li> \n<li></li> \n<li></li> \n</ul> \n<br> \n<h4>Notes:</h4> \n<p></p> \n<br> \n<h4>Action Items:</h4> \n      <ul> \n        <li>□ </li> \n        <li>□ </li> \n        <li>□ </li> \n      </ul> \n    </div>",
+    "tag": "",
+    "drawing": null,
+    "attachments": [],
+    "pinned": false,
+    "created": "2025-11-22T04:58:44.308Z",
+    "updated": "2025-11-22T04:58:44.299Z",
+    "id": 1763787524308
+  }
+]

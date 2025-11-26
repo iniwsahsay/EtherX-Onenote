@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EtherX Test</title>
+</head>
+<body>
+    <h1>Testing EtherX Application</h1>
+    <div id="status"></div>
+    
+    <script>
+        console.log('Test script started');
+        
+        // Test API connection
+        fetch('http://localhost:3001/api/notes', {
+            headers: {
+                'Authorization': 'Bearer test'
+            }
+        })
+        .then(response => {
+            console.log('API Response status:', response.status);
+            document.getElementById('status').innerHTML = 'API Status: ' + response.status;
+        })
+        .catch(error => {
+            console.error('API Error:', error);
+            document.getElementById('status').innerHTML = 'API Error: ' + error.message;
+        });
+    </script>
+</body>
+</html>
