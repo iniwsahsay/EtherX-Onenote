@@ -4,6 +4,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3001;
@@ -11,6 +14,17 @@ const JWT_SECRET = 'etherx-secret-key';
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'etherx-enhanced.html'));
+});
+
+app.get('/otp-auth', (req, res) => {
+  res.sendFile(path.join(__dirname, 'otp', 'index.html'));
+});
+
+app.use('/otp', express.static(path.join(__dirname, 'otp')));
 
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -125,7 +139,121 @@ app.delete('/api/notes/:id', authenticateToken, (req, res) => {
   res.json({ message: 'Note deleted' });
 });
 
+// OTP Storage and Email Configuration
+const otpStore = new Map();
+
+const createTransporter = () => {
+  return nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_APP_PASSWORD
+    }
+  });
+};
+
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many OTP requests from this IP, please try again later.' }
+});
+
+// OTP Routes
+app.post('/api/send-otp', otpLimiter, async (req, res) => {
+  try {
+    const { email, type } = req.body;
+    
+    if (!email || !type) {
+      return res.status(400).json({ success: false, message: 'Email and type are required' });
+    }
+    
+    const otp = generateOTP();
+    const otpData = {
+      otp,
+      email,
+      type,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 2 * 60 * 1000
+    };
+    
+    otpStore.set(email, otpData);
+    
+    if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
+      const transporter = createTransporter();
+      const mailOptions = {
+        from: { name: 'EtherX OneNote', address: process.env.EMAIL_USER },
+        to: email,
+        subject: type === 'signup' ? 'Verify Your Email - OTP Code' : 'Login Verification - OTP Code',
+        html: `<div style="font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;"><h2>${type === 'signup' ? 'Welcome! Verify Your Email' : 'Login Verification'}</h2><div style="background: white; color: #333; padding: 20px; border-radius: 10px; margin: 20px 0; font-size: 24px; font-weight: bold; letter-spacing: 3px; text-align: center;">${otp}</div><p><strong>This OTP will expire in 2 minutes.</strong></p></div>`
+      };
+      
+      await transporter.sendMail(mailOptions);
+    }
+    
+    console.log(`OTP sent to ${email}: ${otp}`);
+    res.json({ success: true, message: 'OTP sent successfully', otp: otp });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ success: false, message: 'Failed to send OTP' });
+  }
+});
+
+app.post('/api/verify-otp', async (req, res) => {
+  try {
+    const { email, otp, type } = req.body;
+    
+    if (!email || !otp || !type) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, and type are required' });
+    }
+    
+    const storedOTPData = otpStore.get(email);
+    
+    if (!storedOTPData) {
+      return res.status(400).json({ success: false, message: 'No OTP found for this email' });
+    }
+    
+    if (Date.now() > storedOTPData.expiresAt) {
+      otpStore.delete(email);
+      return res.status(400).json({ success: false, message: 'OTP has expired' });
+    }
+    
+    if (storedOTPData.otp !== otp || storedOTPData.type !== type) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+    
+    otpStore.delete(email);
+    
+    // Create or update user
+    if (type === 'signup') {
+      const hashedPassword = await bcrypt.hash('default', 10);
+      writeUserData(email, { username: email.split('@')[0], email, password: hashedPassword });
+      writeNotes(email, []);
+    }
+    
+    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, message: 'OTP verified successfully', token });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ success: false, message: 'Failed to verify OTP' });
+  }
+});
+
+// Clean up expired OTPs
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, otpData] of otpStore.entries()) {
+    if (now > otpData.expiresAt) {
+      otpStore.delete(email);
+    }
+  }
+}, 60000);
+
 app.listen(PORT, () => {
   console.log(`✅ EtherX Backend Server running on http://localhost:${PORT}`);
   console.log(`📝 Ready to handle user authentication and notes!`);
+  console.log(`🔐 OTP Authentication system integrated`);
 });

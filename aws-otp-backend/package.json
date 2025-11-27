@@ -1,0 +1,16 @@
+{
+  "name": "etherx-otp-backend",
+  "version": "1.0.0",
+  "description": "OTP authentication backend for EtherX OneNote",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "sam build && sam deploy --guided"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1490.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-sns": "^3.0.0"
+  }
+}

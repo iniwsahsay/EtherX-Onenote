@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  # DynamoDB Table for OTP Storage
+  OTPTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: OTPTable
+      AttributeDefinitions:
+        - AttributeName: identifier
+          AttributeType: S
+      KeySchema:
+        - AttributeName: identifier
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+
+  # Lambda Functions
+  GenerateOTPFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: generate-otp.handler
+      Runtime: nodejs18.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OTPTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OTPTable
+        - SNSPublishMessagePolicy:
+            TopicName: "*"
+      Events:
+        GenerateOTP:
+          Type: Api
+          Properties:
+            Path: /generate-otp
+            Method: post
+
+  VerifyOTPFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: verify-otp.handler
+      Runtime: nodejs18.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OTPTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OTPTable
+      Events:
+        VerifyOTP:
+          Type: Api
+          Properties:
+            Path: /verify-otp
+            Method: post
+
+Outputs:
+  ApiGatewayEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
